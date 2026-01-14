@@ -7,7 +7,7 @@ It's built for long-running builds, scripts, and tasks where you stop staring at
 
 ## Requirements
 
-- Node.js >= 14.0.0
+- Node.js >= 18.0.0
 
 ## Installation
 
@@ -165,7 +165,7 @@ When `--success` is used without an explicit pattern, the Mario pattern is autom
 - ✅ **macOS** (Terminal, iTerm2)
 - ✅ **Linux** (most terminals)
 - ✅ **CI / headless environments** (no errors, silent exit)
-- ✅ **Node.js** >= 14.0.0
+- ✅ **Node.js** >= 18.0.0
 
 If sound is unavailable or muted, gbeep exits cleanly without failing the command.
 
