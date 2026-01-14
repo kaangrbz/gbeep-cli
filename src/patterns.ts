@@ -102,13 +102,13 @@ function parseDurationList(pattern: string, frequency: number): BeepNote[] {
 }
 
 /**
- * Get the Mario success pattern (ascending coin sound)
+ * Get the Mario success pattern (ascending coin sound, faster version)
  */
 function getMarioPattern(): BeepNote[] {
   return [
-    { frequency: 659, duration: 100, pause: 50 },  // E5
-    { frequency: 784, duration: 100, pause: 50 },  // G5
-    { frequency: 988, duration: 150 },              // B5
+    { frequency: 659, duration: 50 },   // E5 - no pause
+    { frequency: 784, duration: 50 },   // G5 - no pause
+    { frequency: 988, duration: 70 },   // B5 - no pause
   ];
 }
 

@@ -98,10 +98,11 @@ const addPresentationCore = 'Add-Type -AssemblyName presentationCore;';
 const createMediaPlayer = '$player = New-Object system.windows.media.mediaplayer;';
 const loadAudioFile = (filePath: string): string => `$player.open('${filePath}');`;
 const playAudio = '$player.Play();';
-const stopAudio = 'Start-Sleep 1; Start-Sleep -s $player.NaturalDuration.TimeSpan.TotalSeconds;Exit;';
-
-const windowPlayCommand = (filePath: string, volume: number): string => {
-  return `powershell -c ${addPresentationCore} ${createMediaPlayer} ${loadAudioFile(filePath)} $player.Volume = ${volume}; ${playAudio} ${stopAudio}`;
+const windowPlayCommand = (filePath: string, volume: number, duration: number): string => {
+  const durationMs = duration;
+  const durationSec = (durationMs / 1000).toFixed(3);
+  const waitCmd = `Start-Sleep -Milliseconds 100; $dur = $player.NaturalDuration.TimeSpan.TotalSeconds; if ($dur -gt 0) { Start-Sleep -Seconds $dur } else { Start-Sleep -Milliseconds ${durationMs} };`;
+  return `powershell -c ${addPresentationCore} ${createMediaPlayer} ${loadAudioFile(filePath)} $player.Volume = ${volume}; ${playAudio} ${waitCmd} Exit;`;
 };
 
 /**
@@ -113,7 +114,7 @@ async function playWindowsBeep(frequency: number, duration: number, verbose?: bo
     if (!tempFile) return false;
     
     const volume = 0.5;
-    const playCmd = windowPlayCommand(tempFile, volume);
+    const playCmd = windowPlayCommand(tempFile, volume, duration);
     
     await execPromise(playCmd, { windowsHide: true });
     
