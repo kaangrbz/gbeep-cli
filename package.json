@@ -1,0 +1,43 @@
+{
+  "name": "gbeep",
+  "version": "1.0.0",
+  "description": "A tiny, cross-platform CLI that plays a sound when a command finishes or on demand",
+  "main": "dist/index.js",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "bin": {
+    "beep": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "test": "jest",
+    "dev": "tsx src/index.ts"
+  },
+  "keywords": [
+    "beep",
+    "sound",
+    "notification",
+    "cli",
+    "terminal",
+    "alert"
+  ],
+  "author": "",
+  "license": "MIT",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "dependencies": {
+    "commander": "^9.4.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^14.18.63",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "tsx": "^4.7.1",
+    "typescript": "^4.9.5"
+  }
+}
