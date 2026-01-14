@@ -96,11 +96,11 @@ export async function parseAndExecute(args: string[]): Promise<number> {
       if (options.pattern) {
         console.error(`🎵 Pattern: ${options.pattern}`);
       }
-      if (options.repeat > 1) {
-        console.error(`🔁 Repeat: ${options.repeat}x`);
+      if ((options.repeat ?? 1) > 1) {
+        console.error(`🔁 Repeat: ${options.repeat ?? 1}x`);
       }
-      if (options.delay > 0) {
-        console.error(`⏳ Delay: ${options.delay}ms`);
+      if ((options.delay ?? 0) > 0) {
+        console.error(`⏳ Delay: ${options.delay ?? 0}ms`);
       }
     }
     
@@ -127,8 +127,8 @@ export async function parseAndExecute(args: string[]): Promise<number> {
         frequency,
         duration,
         pattern: options.pattern,
-        repeat: options.repeat,
-        delay: options.delay,
+        repeat: options.repeat ?? 1,
+        delay: options.delay ?? 0,
         soundMode: options.sound as 'auto' | 'bell' | 'native',
         verbose: options.verbose && !options.silent,
       };
@@ -162,11 +162,11 @@ export async function parseAndExecute(args: string[]): Promise<number> {
       if (options.pattern) {
         console.error(`🎵 Pattern: ${options.pattern}`);
       }
-      if (options.repeat > 1) {
-        console.error(`🔁 Repeat: ${options.repeat}x`);
+      if ((options.repeat ?? 1) > 1) {
+        console.error(`🔁 Repeat: ${options.repeat ?? 1}x`);
       }
-      if (options.delay > 0) {
-        console.error(`⏳ Delay: ${options.delay}ms`);
+      if ((options.delay ?? 0) > 0) {
+        console.error(`⏳ Delay: ${options.delay ?? 0}ms`);
       }
     }
     
@@ -174,8 +174,8 @@ export async function parseAndExecute(args: string[]): Promise<number> {
       frequency,
       duration,
       pattern: options.pattern,
-      repeat: options.repeat,
-      delay: options.delay,
+      repeat: options.repeat ?? 1,
+      delay: options.delay ?? 0,
       soundMode: options.sound as 'auto' | 'bell' | 'native',
       verbose: options.verbose && !options.silent,
     };
