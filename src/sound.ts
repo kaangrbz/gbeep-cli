@@ -207,8 +207,15 @@ export async function playBeep(options: SoundOptions): Promise<boolean> {
   const { frequency, duration, mode = 'auto', verbose } = options;
   
   try {
+    const osType = detectOS();
+    
     if (mode === 'bell') {
-      return playBell(verbose);
+      // Bell mode: Linux için terminal bell, diğerleri için native
+      if (osType === 'linux') {
+        return playBell(verbose);
+      }
+      // Windows ve macOS için bell modunda bile native kullan
+      return await playNativeBeep(frequency || 1200, duration || 300, verbose);
     }
     
     if (mode === 'native') {
@@ -216,20 +223,22 @@ export async function playBeep(options: SoundOptions): Promise<boolean> {
     }
     
     // auto mode: 
-    // - If frequency/duration are specified (patterns or custom beeps), 
-    //   skip bell and use native (bell doesn't support frequencies)
-    // - Otherwise, try bell first, then native
-    if (frequency !== undefined && duration !== undefined) {
-      // Pattern or custom beep - requires frequency support
-      return await playNativeBeep(frequency, duration, verbose);
+    // - Linux: Terminal bell önce, sonra native
+    // - Windows/macOS: Direkt native (bell kullanılmaz)
+    if (osType === 'linux') {
+      // Linux için bell'i dene önce
+      if (frequency === undefined || duration === undefined) {
+        // Simple beep - try bell first
+        if (playBell(verbose)) {
+          return true;
+        }
+      }
+      // Pattern veya bell başarısız - native'e geç
+      return await playNativeBeep(frequency || 1200, duration || 300, verbose);
+    } else {
+      // Windows ve macOS: Direkt native kullan (bell yok)
+      return await playNativeBeep(frequency || 1200, duration || 300, verbose);
     }
-    
-    // Simple beep - try bell first
-    if (playBell(verbose)) {
-      return true;
-    }
-    
-    return await playNativeBeep(frequency || 1200, duration || 300, verbose);
   } catch {
     // Fail silently - don't break the command
     return false;

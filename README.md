@@ -118,20 +118,23 @@ Shows detailed information about sound method and execution.
 ### `auto`
 Uses the best available method per OS.
 
-- Terminal bell first
-- Windows fallback: PowerShell MediaPlayer with generated WAV file
-- macOS fallback: `afplay` with generated WAV file
-- Linux fallback: `beep` command or terminal bell
+- **Windows**: PowerShell MediaPlayer with generated WAV file (terminal bell not used)
+- **macOS**: `afplay` with generated WAV file (terminal bell not used)
+- **Linux**: Terminal bell first, then `beep` command if available
 
 ### `bell`
-Forces terminal bell (`\a`).
+Platform-specific behavior:
+
+- **Linux**: Forces terminal bell (`\a`)
+- **Windows**: Uses PowerShell MediaPlayer (instead of terminal bell)
+- **macOS**: Uses `afplay` (instead of terminal bell)
 
 ### `native`
-Uses OS-specific sound with native Node.js modules:
+Uses OS-specific sound methods:
 
 - **Windows**: PowerShell MediaPlayer with generated WAV file
 - **macOS**: `afplay` with generated WAV file
-- **Linux**: `beep` command or terminal bell
+- **Linux**: `beep` command or terminal bell fallback
 
 ## Beep Patterns
 
@@ -161,9 +164,9 @@ When `--success` is used without an explicit pattern, the Mario pattern is autom
 
 ## Platform Support
 
-- ✅ **Windows** (PowerShell, CMD, Windows Terminal)
-- ✅ **macOS** (Terminal, iTerm2)
-- ✅ **Linux** (most terminals)
+- ✅ **Windows** (PowerShell, CMD, Windows Terminal) - Uses PowerShell MediaPlayer, terminal bell not used
+- ✅ **macOS** (Terminal, iTerm2) - Uses `afplay`, terminal bell not used
+- ✅ **Linux** (most terminals) - Uses terminal bell or `beep` command
 - ✅ **CI / headless environments** (no errors, silent exit)
 - ✅ **Node.js** >= 14.0.0
 
