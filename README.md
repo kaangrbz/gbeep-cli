@@ -7,7 +7,7 @@ It's built for long-running builds, scripts, and tasks where you stop staring at
 
 ## Requirements
 
-- Node.js >= 18.0.0
+- Node.js >= 14.0.0
 
 ## Installation
 
@@ -119,18 +119,18 @@ Shows detailed information about sound method and execution.
 Uses the best available method per OS.
 
 - Terminal bell first
-- Windows fallback: PowerShell `Console.Beep`
-- macOS fallback: `afplay` with generated tone
+- Windows fallback: PowerShell MediaPlayer with generated WAV file
+- macOS fallback: `afplay` with generated WAV file
 - Linux fallback: `beep` command or terminal bell
 
 ### `bell`
 Forces terminal bell (`\a`).
 
 ### `native`
-Uses OS-specific sound:
+Uses OS-specific sound with native Node.js modules:
 
-- **Windows**: PowerShell `Console.Beep`
-- **macOS**: `afplay` with generated tone
+- **Windows**: PowerShell MediaPlayer with generated WAV file
+- **macOS**: `afplay` with generated WAV file
 - **Linux**: `beep` command or terminal bell
 
 ## Beep Patterns
@@ -165,7 +165,7 @@ When `--success` is used without an explicit pattern, the Mario pattern is autom
 - ✅ **macOS** (Terminal, iTerm2)
 - ✅ **Linux** (most terminals)
 - ✅ **CI / headless environments** (no errors, silent exit)
-- ✅ **Node.js** >= 18.0.0
+- ✅ **Node.js** >= 14.0.0
 
 If sound is unavailable or muted, gbeep exits cleanly without failing the command.
 

@@ -7,4 +7,6 @@ module.exports = {
     'src/**/*.ts',
     '!src/**/*.d.ts',
   ],
+  // Test setup dosyasını kullan (console çıktılarını temizler)
+  setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
 };

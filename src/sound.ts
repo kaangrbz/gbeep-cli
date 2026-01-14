@@ -1,7 +1,10 @@
-import { execSync } from 'child_process';
+import { exec } from 'child_process';
+import { promisify } from 'util';
 import * as os from 'os';
 import * as fs from 'fs';
 import * as path from 'path';
+
+const execPromise = promisify(exec);
 
 export type SoundMode = 'auto' | 'bell' | 'native';
 
@@ -38,23 +41,7 @@ function playBell(verbose?: boolean): boolean {
 }
 
 /**
- * Play beep on Windows using PowerShell Console.Beep
- */
-function playWindowsBeep(frequency: number, duration: number, verbose?: boolean): boolean {
-  try {
-    const script = `[Console]::Beep(${frequency}, ${duration})`;
-    execSync(`powershell -Command "${script}"`, { stdio: 'ignore' });
-    if (verbose) {
-      console.error(`🔊 Windows: Console.Beep(${frequency}Hz, ${duration}ms)`);
-    }
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-/**
- * Generate a simple tone file for macOS afplay
+ * Generate a simple tone file for audio playback
  */
 function generateToneFile(frequency: number, duration: number): string | null {
   try {
@@ -98,14 +85,68 @@ function generateToneFile(frequency: number, duration: number): string | null {
 }
 
 /**
- * Play beep on macOS using afplay
+ * Mac play command
  */
-function playMacOSBeep(frequency: number, duration: number, verbose?: boolean): boolean {
+const macPlayCommand = (filePath: string, volume: number, rate: number): string => {
+  return `afplay "${filePath}" -v ${volume} -r ${rate}`;
+};
+
+/**
+ * Windows play command using PowerShell MediaPlayer
+ */
+const addPresentationCore = 'Add-Type -AssemblyName presentationCore;';
+const createMediaPlayer = '$player = New-Object system.windows.media.mediaplayer;';
+const loadAudioFile = (filePath: string): string => `$player.open('${filePath}');`;
+const playAudio = '$player.Play();';
+const stopAudio = 'Start-Sleep 1; Start-Sleep -s $player.NaturalDuration.TimeSpan.TotalSeconds;Exit;';
+
+const windowPlayCommand = (filePath: string, volume: number): string => {
+  return `powershell -c ${addPresentationCore} ${createMediaPlayer} ${loadAudioFile(filePath)} $player.Volume = ${volume}; ${playAudio} ${stopAudio}`;
+};
+
+/**
+ * Play beep on Windows using PowerShell MediaPlayer
+ */
+async function playWindowsBeep(frequency: number, duration: number, verbose?: boolean): Promise<boolean> {
   try {
     const tempFile = generateToneFile(frequency, duration);
     if (!tempFile) return false;
     
-    execSync(`afplay "${tempFile}"`, { stdio: 'ignore' });
+    const volume = 0.5;
+    const playCmd = windowPlayCommand(tempFile, volume);
+    
+    await execPromise(playCmd, { windowsHide: true });
+    
+    // Clean up temp file
+    try {
+      fs.unlinkSync(tempFile);
+    } catch {
+      // Ignore cleanup errors
+    }
+    
+    if (verbose) {
+      console.error(`🔊 Windows: MediaPlayer (${frequency}Hz, ${duration}ms)`);
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Play beep on macOS using afplay
+ */
+async function playMacOSBeep(frequency: number, duration: number, verbose?: boolean): Promise<boolean> {
+  try {
+    const tempFile = generateToneFile(frequency, duration);
+    if (!tempFile) return false;
+    
+    const volume = 0.5;
+    const rate = 1;
+    const volumeAdjusted = Math.min(2, volume * 2); // Mac volume range 0-2
+    const playCmd = macPlayCommand(tempFile, volumeAdjusted, rate);
+    
+    await execPromise(playCmd);
     
     // Clean up temp file
     try {
@@ -126,10 +167,11 @@ function playMacOSBeep(frequency: number, duration: number, verbose?: boolean): 
 /**
  * Play beep on Linux using terminal bell (or speaker beep if available)
  */
-function playLinuxBeep(frequency: number, duration: number, verbose?: boolean): boolean {
+async function playLinuxBeep(frequency: number, duration: number, verbose?: boolean): Promise<boolean> {
   // Try speaker beep first (if available)
   try {
-    execSync(`beep -f ${frequency} -l ${duration}`, { stdio: 'ignore' });
+    const playCmd = `beep -f ${frequency} -l ${duration}`;
+    await execPromise(playCmd);
     if (verbose) {
       console.error(`🔊 Linux: beep command (${frequency}Hz, ${duration}ms)`);
     }
@@ -143,16 +185,16 @@ function playLinuxBeep(frequency: number, duration: number, verbose?: boolean): 
 /**
  * Play a beep sound using the native OS method
  */
-function playNativeBeep(frequency: number, duration: number, verbose?: boolean): boolean {
+async function playNativeBeep(frequency: number, duration: number, verbose?: boolean): Promise<boolean> {
   const osType = detectOS();
   
   switch (osType) {
     case 'windows':
-      return playWindowsBeep(frequency, duration, verbose);
+      return await playWindowsBeep(frequency, duration, verbose);
     case 'macos':
-      return playMacOSBeep(frequency, duration, verbose);
+      return await playMacOSBeep(frequency, duration, verbose);
     case 'linux':
-      return playLinuxBeep(frequency, duration, verbose);
+      return await playLinuxBeep(frequency, duration, verbose);
     default:
       return playBell(verbose);
   }
@@ -161,7 +203,7 @@ function playNativeBeep(frequency: number, duration: number, verbose?: boolean):
 /**
  * Play a beep sound
  */
-export function playBeep(options: SoundOptions): boolean {
+export async function playBeep(options: SoundOptions): Promise<boolean> {
   const { frequency, duration, mode = 'auto', verbose } = options;
   
   try {
@@ -170,15 +212,24 @@ export function playBeep(options: SoundOptions): boolean {
     }
     
     if (mode === 'native') {
-      return playNativeBeep(frequency, duration, verbose);
+      return await playNativeBeep(frequency, duration, verbose);
     }
     
-    // auto mode: try bell first, then native
+    // auto mode: 
+    // - If frequency/duration are specified (patterns or custom beeps), 
+    //   skip bell and use native (bell doesn't support frequencies)
+    // - Otherwise, try bell first, then native
+    if (frequency !== undefined && duration !== undefined) {
+      // Pattern or custom beep - requires frequency support
+      return await playNativeBeep(frequency, duration, verbose);
+    }
+    
+    // Simple beep - try bell first
     if (playBell(verbose)) {
       return true;
     }
     
-    return playNativeBeep(frequency, duration, verbose);
+    return await playNativeBeep(frequency || 1200, duration || 300, verbose);
   } catch {
     // Fail silently - don't break the command
     return false;

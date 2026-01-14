@@ -22,14 +22,19 @@ function sleep(ms: number): Promise<void> {
  * Play a single beep note
  */
 async function playNote(note: BeepNote, soundMode: 'auto' | 'bell' | 'native', verbose?: boolean): Promise<void> {
+  // Pattern'ler farklı frekanslar içerir, bell modu frekansları desteklemez
+  // Bu yüzden pattern'ler için (farklı frekanslı notalar) native modunu kullan
+  const effectiveMode: 'auto' | 'bell' | 'native' = 
+    (soundMode === 'bell' || soundMode === 'auto') ? 'native' : soundMode;
+  
   const options: SoundOptions = {
     frequency: note.frequency,
     duration: note.duration,
-    mode: soundMode,
+    mode: effectiveMode,
     verbose,
   };
   
-  playBeep(options);
+  await playBeep(options);
   
   if (note.pause) {
     await sleep(note.pause);
@@ -50,6 +55,9 @@ async function playPattern(
   if (verbose) {
     console.error(`🎵 Playing pattern: ${pattern}`);
     console.error(`   Notes: ${notes.length}`);
+    if (soundMode === 'bell' || soundMode === 'auto') {
+      console.error(`   Note: Pattern requires frequency support, using native mode`);
+    }
   }
   
   for (const note of notes) {
@@ -94,7 +102,7 @@ export async function playBeepWithConfig(config: BeepConfig): Promise<void> {
         mode: soundMode,
         verbose: verbose && i === 0, // Only verbose on first beep
       };
-      playBeep(options);
+      await playBeep(options);
     }
     
     // Pause between repeats (except after last)

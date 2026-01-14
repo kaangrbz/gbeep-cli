@@ -37,19 +37,36 @@ export async function parseAndExecute(args: string[]): Promise<number> {
     .option('--success', 'Beep only on successful exit')
     .option('--error', 'Beep only on error exit')
     .option('--silent', 'Suppress all output (sound only)')
-    .option('-p, --pattern <pattern>', 'Beep pattern (e.g., "s-s-l", "mario", "200,100,400")')
+    .option('--pattern <pattern>', 'Beep pattern (e.g., "s-s-l", "mario", "200,100,400")')
     .option('-r, --repeat <n>', 'Repeat beep N times', (v: string) => parseInt(v, 10), 1)
     .option('--delay <ms>', 'Delay before beep in milliseconds', (v: string) => parseInt(v, 10), 0)
     .option('-v, --verbose', 'Show verbose output')
     .option('--success-freq <hz>', 'Frequency for success beep', (v: string) => parseInt(v, 10))
     .option('--success-duration <ms>', 'Duration for success beep', (v: string) => parseInt(v, 10))
     .option('--error-freq <hz>', 'Frequency for error beep', (v: string) => parseInt(v, 10))
-    .option('--error-duration <ms>', 'Duration for error beep', (v: string) => parseInt(v, 10))
-    .allowUnknownOption()
-    .parse(args);
+    .option('--error-duration <ms>', 'Duration for error beep', (v: string) => parseInt(v, 10));
   
-  const options = program.opts() as CLIOptions;
+  // Parse args - komut argümanları için allowUnknownOption kullanmadan parse et
+  try {
+    program.parse(args);
+  } catch (err) {
+    // Unknown option hatası varsa yok say (komut argümanları için)
+  }
+  
+  let options = program.opts() as CLIOptions;
   const remaining = program.args;
+  
+  // Manuel pattern parse (Commander.js sorun yaratıyor olabilir)
+  const patternIndex = args.indexOf('--pattern');
+  if (patternIndex !== -1 && patternIndex + 1 < args.length) {
+    options.pattern = args[patternIndex + 1];
+  }
+  
+  // Debug: pattern değerini kontrol et
+  if (process.env.DEBUG) {
+    console.error('DEBUG: options.pattern =', options.pattern);
+    console.error('DEBUG: all options =', JSON.stringify(options, null, 2));
+  }
   
   // Handle positional arguments (frequency duration shortcut)
   let frequency = options.frequency;
@@ -96,11 +113,11 @@ export async function parseAndExecute(args: string[]): Promise<number> {
       if (options.pattern) {
         console.error(`🎵 Pattern: ${options.pattern}`);
       }
-      if ((options.repeat ?? 1) > 1) {
-        console.error(`🔁 Repeat: ${options.repeat ?? 1}x`);
+      if ((options.repeat || 1) > 1) {
+        console.error(`🔁 Repeat: ${options.repeat || 1}x`);
       }
-      if ((options.delay ?? 0) > 0) {
-        console.error(`⏳ Delay: ${options.delay ?? 0}ms`);
+      if ((options.delay || 0) > 0) {
+        console.error(`⏳ Delay: ${options.delay || 0}ms`);
       }
     }
     
@@ -127,8 +144,8 @@ export async function parseAndExecute(args: string[]): Promise<number> {
         frequency,
         duration,
         pattern: options.pattern,
-        repeat: options.repeat ?? 1,
-        delay: options.delay ?? 0,
+        repeat: options.repeat || 1,
+        delay: options.delay || 0,
         soundMode: options.sound as 'auto' | 'bell' | 'native',
         verbose: options.verbose && !options.silent,
       };
@@ -140,13 +157,13 @@ export async function parseAndExecute(args: string[]): Promise<number> {
       
       // Apply success/error specific settings
       if (result.success && (options.successFreq || options.successDuration)) {
-        beepConfig.frequency = options.successFreq ?? frequency;
-        beepConfig.duration = options.successDuration ?? duration;
+        beepConfig.frequency = options.successFreq || frequency;
+        beepConfig.duration = options.successDuration || duration;
       }
       
       if (!result.success && (options.errorFreq || options.errorDuration)) {
-        beepConfig.frequency = options.errorFreq ?? frequency;
-        beepConfig.duration = options.errorDuration ?? duration;
+        beepConfig.frequency = options.errorFreq || frequency;
+        beepConfig.duration = options.errorDuration || duration;
       }
       
       await playBeepWithConfig(beepConfig);
@@ -162,11 +179,11 @@ export async function parseAndExecute(args: string[]): Promise<number> {
       if (options.pattern) {
         console.error(`🎵 Pattern: ${options.pattern}`);
       }
-      if ((options.repeat ?? 1) > 1) {
-        console.error(`🔁 Repeat: ${options.repeat ?? 1}x`);
+      if ((options.repeat || 1) > 1) {
+        console.error(`🔁 Repeat: ${options.repeat || 1}x`);
       }
-      if ((options.delay ?? 0) > 0) {
-        console.error(`⏳ Delay: ${options.delay ?? 0}ms`);
+      if ((options.delay || 0) > 0) {
+        console.error(`⏳ Delay: ${options.delay || 0}ms`);
       }
     }
     
