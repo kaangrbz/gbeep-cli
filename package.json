@@ -1,13 +1,13 @@
 {
   "name": "gbeep",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A tiny, cross-platform CLI that plays a sound when a command finishes or on demand",
   "main": "dist/index.js",
   "engines": {
     "node": ">=14.0.0"
   },
   "bin": {
-    "beep": "./dist/index.js"
+    "gbeep": "dist/index.js"
   },
   "scripts": {
     "build": "tsc",
@@ -40,7 +40,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/kaangrbz/gbeep-cli.git"
+    "url": "git+https://github.com/kaangrbz/gbeep-cli.git"
   },
   "homepage": "https://github.com/kaangrbz/gbeep-cli#readme",
   "bugs": {
