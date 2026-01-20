@@ -36,15 +36,23 @@
     "node audio",
     "audio node"
   ],
-  "author": "",
+  "author": "kaangrbz",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kaangrbz/gbeep-cli.git"
+  },
+  "homepage": "https://github.com/kaangrbz/gbeep-cli#readme",
+  "bugs": {
+    "url": "https://github.com/kaangrbz/gbeep-cli/issues"
+  },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "dependencies": {
-    "commander": "^9.4.1",
-    "sound-play": "^1.1.0"
+    "commander": "^9.4.1"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",

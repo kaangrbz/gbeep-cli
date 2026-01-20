@@ -12,7 +12,7 @@ It's built for long-running builds, scripts, and tasks where you stop staring at
 ## Installation
 
 ```bash
-npm install -g gbeep
+yarn global add gbeep
 ```
 
 ## Usage
